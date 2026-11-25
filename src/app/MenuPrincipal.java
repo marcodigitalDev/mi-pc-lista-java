@@ -16,7 +16,6 @@ import javax.swing.UIManager;
 public class MenuPrincipal extends JFrame implements ActionListener {
 	private static final long serialVersionUID = 1L;
 
-	// Declaración de variables
 	private JLabel lblLogo;
 	private JPanel pnlLinea;
 	private JLabel lblTitulo;
@@ -26,7 +25,6 @@ public class MenuPrincipal extends JFrame implements ActionListener {
 	private JButton btnSalir;
 	private Tienda tienda;
 
-	// Lanza la aplicación
 	public static void main(String[] args) {
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -47,7 +45,6 @@ public class MenuPrincipal extends JFrame implements ActionListener {
 		});
 	}
 
-	// Crea la GUI
 	public MenuPrincipal() {
 		// La misma tienda se entrega a todas las ventanas
 		tienda = new Tienda();
@@ -65,7 +62,6 @@ public class MenuPrincipal extends JFrame implements ActionListener {
 		lblLogo.setBounds(117, 12, 251, 88);
 		getContentPane().add(lblLogo);
 
-		// Línea roja del encabezado
 		pnlLinea = new JPanel();
 		pnlLinea.setBackground(new Color(225, 0, 0));
 		pnlLinea.setBounds(0, 110, 500, 3);
@@ -107,7 +103,6 @@ public class MenuPrincipal extends JFrame implements ActionListener {
 		getContentPane().add(btnSalir);
 	}
 
-	// Direcciona eventos de tipo ActionEvent
 	public void actionPerformed(ActionEvent arg0) {
 		if (arg0.getSource() == btnProductos) {
 			actionPerformedBtnProductos(arg0);
@@ -120,19 +115,16 @@ public class MenuPrincipal extends JFrame implements ActionListener {
 		}
 	}
 
-	// Procesa la pulsación del botón Productos
 	protected void actionPerformedBtnProductos(ActionEvent arg0) {
 		VentanaProductos ventana = new VentanaProductos(tienda);
 		ventana.setVisible(true);
 	}
 
-	// Procesa la pulsación del botón Ventas
 	protected void actionPerformedBtnVentas(ActionEvent arg0) {
 		VentanaVentas ventana = new VentanaVentas(tienda);
 		ventana.setVisible(true);
 	}
 
-	// Procesa la pulsación del botón Salir
 	protected void actionPerformedBtnSalir(ActionEvent arg0) {
 		System.exit(0);
 	}

@@ -18,13 +18,18 @@ import javax.swing.ListSelectionModel;
 public class VentanaVentas extends JDialog implements ActionListener {
 	private static final long serialVersionUID = 1L;
 
-	// Declaración de variables
 	private JLabel lblTitulo;
 	private JLabel lblLogo;
 	private JPanel pnlLinea;
 	private JLabel lblLaptops;
 	private JScrollPane scpLaptops;
 	private JTable tblLaptops;
+	private JLabel lblNombre;
+	private JTextField txtNombre;
+	private JLabel lblApellido;
+	private JTextField txtApellido;
+	private JLabel lblEmpresa;
+	private JTextField txtEmpresa;
 	private JLabel lblCantidad;
 	private JTextField txtCantidad;
 	private JLabel lblVentas;
@@ -37,7 +42,6 @@ public class VentanaVentas extends JDialog implements ActionListener {
 	private JButton btnEliminar;
 	private Tienda tienda;
 
-	// Crea la GUI
 	public VentanaVentas(Tienda tie) {
 		tienda = tie;
 
@@ -60,15 +64,14 @@ public class VentanaVentas extends JDialog implements ActionListener {
 		lblLogo.setBounds(779, 5, 126, 44);
 		getContentPane().add(lblLogo);
 
-		// Línea roja del encabezado
 		pnlLinea = new JPanel();
 		pnlLinea.setBackground(new Color(225, 0, 0));
 		pnlLinea.setBounds(0, 54, 936, 3);
 		getContentPane().add(pnlLinea);
 
-		lblLaptops = new JLabel("1. Seleccione la laptop e ingrese la cantidad");
+		lblLaptops = new JLabel("1. Seleccione la laptop e ingrese los datos de la venta (empresa es opcional)");
 		lblLaptops.setFont(new Font("SansSerif", Font.BOLD, 13));
-		lblLaptops.setBounds(15, 68, 500, 18);
+		lblLaptops.setBounds(15, 68, 700, 18);
 		getContentPane().add(lblLaptops);
 
 		scpLaptops = new JScrollPane();
@@ -98,19 +101,46 @@ public class VentanaVentas extends JDialog implements ActionListener {
 		tblLaptops.setDefaultEditor(Object.class, null);
 		scpLaptops.setViewportView(tblLaptops);
 
+		lblNombre = new JLabel("Nombre");
+		lblNombre.setBounds(15, 258, 60, 16);
+		getContentPane().add(lblNombre);
+
+		txtNombre = new JTextField();
+		txtNombre.setBounds(75, 254, 120, 25);
+		getContentPane().add(txtNombre);
+		txtNombre.setColumns(10);
+
+		lblApellido = new JLabel("Apellido");
+		lblApellido.setBounds(207, 258, 60, 16);
+		getContentPane().add(lblApellido);
+
+		txtApellido = new JTextField();
+		txtApellido.setBounds(267, 254, 120, 25);
+		getContentPane().add(txtApellido);
+		txtApellido.setColumns(10);
+
+		lblEmpresa = new JLabel("Empresa");
+		lblEmpresa.setBounds(399, 258, 60, 16);
+		getContentPane().add(lblEmpresa);
+
+		txtEmpresa = new JTextField();
+		txtEmpresa.setBounds(459, 254, 120, 25);
+		getContentPane().add(txtEmpresa);
+		txtEmpresa.setColumns(10);
+
 		lblCantidad = new JLabel("Cantidad");
-		lblCantidad.setBounds(15, 258, 70, 16);
+		lblCantidad.setBounds(591, 258, 65, 16);
 		getContentPane().add(lblCantidad);
 
 		txtCantidad = new JTextField();
-		txtCantidad.setBounds(85, 254, 100, 25);
+		txtCantidad.setBounds(656, 254, 60, 25);
 		getContentPane().add(txtCantidad);
 		txtCantidad.setColumns(10);
 
 		btnVender = new JButton("Vender");
 		btnVender.setIcon(new ImageIcon("src/imagenes/vender.png"));
 		btnVender.addActionListener(this);
-		btnVender.setBounds(195, 250, 125, 32);
+		btnVender.setBounds(780, 250, 125, 32);
 		getContentPane().add(btnVender);
 
 		lblVentas = new JLabel("2. Ventas registradas");
@@ -129,6 +159,15 @@ public class VentanaVentas extends JDialog implements ActionListener {
 		tblVentas.setSelectionForeground(Color.BLACK);
 		tblVentas.setShowGrid(true);
 		tblVentas.setGridColor(new Color(225, 225, 225));
+		tblVentas.getColumn("N° venta").setPreferredWidth(60);
+		tblVentas.getColumn("Código").setPreferredWidth(55);
+		tblVentas.getColumn("Producto").setPreferredWidth(155);
+		tblVentas.getColumn("Nombre").setPreferredWidth(95);
+		tblVentas.getColumn("Apellido").setPreferredWidth(95);
+		tblVentas.getColumn("Empresa").setPreferredWidth(110);
+		tblVentas.getColumn("Cantidad").setPreferredWidth(65);
+		tblVentas.getColumn("Precio unit. S/.").setPreferredWidth(110);
+		tblVentas.getColumn("Importe total S/.").setPreferredWidth(120);
 		tblVentas.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		tblVentas.getTableHeader().setReorderingAllowed(false);
 		// Las celdas no se editan directamente en la tabla
@@ -157,7 +196,6 @@ public class VentanaVentas extends JDialog implements ActionListener {
 		getContentPane().add(btnEliminar);
 	}
 
-	// Direcciona eventos de tipo ActionEvent
 	public void actionPerformed(ActionEvent arg0) {
 		if (arg0.getSource() == btnVender) {
 			actionPerformedBtnVender(arg0);
@@ -170,18 +208,21 @@ public class VentanaVentas extends JDialog implements ActionListener {
 		}
 	}
 
-	// Procesa la pulsación del botón Vender
 	protected void actionPerformedBtnVender(ActionEvent arg0) {
-		// Declaración de variables
 		int fila, cantidad;
+		String nombre, apellido, empresa;
 
-		// Entrada de datos
 		fila = tblLaptops.getSelectedRow();
+		nombre = getTexto(txtNombre);
+		apellido = getTexto(txtApellido);
+		empresa = getTexto(txtEmpresa);
 		cantidad = getCantidad();
 
-		// Validación, proceso y salida de resultados
 		if (fila == -1) {
 			mensaje("Seleccione una laptop de la tabla");
+		}
+		else if (nombre.equals("") || apellido.equals("")) {
+			mensaje("Ingrese el nombre y el apellido");
 		}
 		else if (cantidad < 1) {
 			mensaje("La cantidad debe ser un número entero desde 1");
@@ -190,21 +231,20 @@ public class VentanaVentas extends JDialog implements ActionListener {
 			mensaje("Stock insuficiente. Unidades disponibles: " + tienda.getStock(fila));
 		}
 		else {
-			tienda.registrarVenta(fila, cantidad);
+			tienda.registrarVenta(fila, nombre, apellido, empresa, cantidad);
+			txtNombre.setText("");
+			txtApellido.setText("");
+			txtEmpresa.setText("");
 			txtCantidad.setText("");
 			seleccionar(tblVentas.getRowCount() - 1);
 		}
 	}
 
-	// Procesa la pulsación del botón Consultar
 	protected void actionPerformedBtnConsultar(ActionEvent arg0) {
-		// Declaración de variables
 		int fila;
 
-		// Entrada de datos y búsqueda
-		fila = tienda.buscarFila(tienda.getModeloVentas(), txtBuscar.getText().trim());
+		fila = tienda.buscarFila(tienda.getModeloVentas(), getTexto(txtBuscar));
 
-		// Salida de resultados
 		if (fila == -1) {
 			mensaje("No existe una venta con ese número");
 		}
@@ -213,15 +253,11 @@ public class VentanaVentas extends JDialog implements ActionListener {
 		}
 	}
 
-	// Procesa la pulsación del botón Eliminar venta
 	protected void actionPerformedBtnEliminar(ActionEvent arg0) {
-		// Declaración de variables
 		int fila, respuesta;
 
-		// Entrada de datos
 		fila = tblVentas.getSelectedRow();
 
-		// Validación y proceso
 		if (fila == -1) {
 			mensaje("Seleccione una venta de la tabla");
 		}
@@ -236,23 +272,26 @@ public class VentanaVentas extends JDialog implements ActionListener {
 		}
 	}
 
-	// Lee y retorna la cantidad, o -1 si no es un número entero
+	String getTexto(JTextField txt) {
+		return txt.getText().trim();
+	}
+
+	// Retorna -1 si no es un número entero
 	int getCantidad() {
 		try {
-			return Integer.parseInt(txtCantidad.getText().trim());
+			return Integer.parseInt(getTexto(txtCantidad));
 		}
 		catch (NumberFormatException e) {
 			return -1;
 		}
 	}
 
-	// Selecciona una fila y desplaza la tabla hasta mostrarla
+	// Desplaza la tabla hasta mostrar la fila seleccionada
 	void seleccionar(int fila) {
 		tblVentas.setRowSelectionInterval(fila, fila);
 		tblVentas.scrollRectToVisible(tblVentas.getCellRect(fila, 0, true));
 	}
 
-	// Muestra un mensaje en una ventana emergente
 	void mensaje(String cad) {
 		JOptionPane.showMessageDialog(this, cad);
 	}

@@ -5,7 +5,7 @@ Sistema de escritorio en Java (Swing) para que los vendedores administren laptop
 ## Qué hace
 
 - **Productos:** tabla con las características, el precio y el stock de cada laptop. Permite consultar por código, registrar, actualizar y eliminar.
-- **Ventas:** se elige una laptop de la tabla, se ingresa la cantidad y se vende. Cada venta guarda producto, cantidad, precio unitario e importe total, y descuenta el stock. Permite consultar por número y eliminar; al eliminar una venta, las unidades vuelven al stock si la laptop sigue en el catálogo.
+- **Ventas:** se elige una laptop de la tabla, se ingresan nombre, apellido, empresa (opcional) y cantidad, y se vende. Cada venta guarda esos datos, producto, precio unitario e importe total, y descuenta el stock. Permite consultar por número y eliminar; al eliminar una venta, las unidades vuelven al stock si la laptop sigue en el catálogo.
 
 Los datos están en memoria y se pierden al cerrar el programa. Al iniciar hay cuatro laptops de ejemplo. Los códigos (`L001`, `V001`) se generan automáticamente.
 

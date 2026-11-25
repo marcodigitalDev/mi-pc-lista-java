@@ -20,7 +20,6 @@ import javax.swing.event.ListSelectionListener;
 public class VentanaProductos extends JDialog implements ActionListener, ListSelectionListener {
 	private static final long serialVersionUID = 1L;
 
-	// Declaración de variables
 	private JLabel lblTitulo;
 	private JLabel lblLogo;
 	private JPanel pnlLinea;
@@ -54,7 +53,6 @@ public class VentanaProductos extends JDialog implements ActionListener, ListSel
 	private JButton btnEliminar;
 	private Tienda tienda;
 
-	// Crea la GUI
 	public VentanaProductos(Tienda tie) {
 		tienda = tie;
 
@@ -77,7 +75,6 @@ public class VentanaProductos extends JDialog implements ActionListener, ListSel
 		lblLogo.setBounds(779, 5, 126, 44);
 		getContentPane().add(lblLogo);
 
-		// Línea roja del encabezado
 		pnlLinea = new JPanel();
 		pnlLinea.setBackground(new Color(225, 0, 0));
 		pnlLinea.setBounds(0, 54, 936, 3);
@@ -239,7 +236,6 @@ public class VentanaProductos extends JDialog implements ActionListener, ListSel
 		limpiarCampos();
 	}
 
-	// Direcciona eventos de tipo ActionEvent
 	public void actionPerformed(ActionEvent arg0) {
 		if (arg0.getSource() == btnConsultar) {
 			actionPerformedBtnConsultar(arg0);
@@ -268,15 +264,11 @@ public class VentanaProductos extends JDialog implements ActionListener, ListSel
 		}
 	}
 
-	// Procesa la pulsación del botón Consultar
 	protected void actionPerformedBtnConsultar(ActionEvent arg0) {
-		// Declaración de variables
 		int fila;
 
-		// Entrada de datos y búsqueda
 		fila = tienda.buscarFila(tienda.getModeloLaptops(), getTexto(txtBuscar));
 
-		// Salida de resultados
 		if (fila == -1) {
 			mensaje("No existe una laptop con ese código");
 		}
@@ -285,14 +277,12 @@ public class VentanaProductos extends JDialog implements ActionListener, ListSel
 		}
 	}
 
-	// Procesa la pulsación del botón Nuevo
 	protected void actionPerformedBtnNuevo(ActionEvent arg0) {
 		tblLaptops.clearSelection();
 		limpiarCampos();
 		txtMarca.requestFocus();
 	}
 
-	// Procesa la pulsación del botón Registrar
 	protected void actionPerformedBtnRegistrar(ActionEvent arg0) {
 		if (datosValidos()) {
 			tienda.registrarLaptop(
@@ -304,15 +294,11 @@ public class VentanaProductos extends JDialog implements ActionListener, ListSel
 		}
 	}
 
-	// Procesa la pulsación del botón Actualizar
 	protected void actionPerformedBtnActualizar(ActionEvent arg0) {
-		// Declaración de variables
 		int fila;
 
-		// Entrada de datos
 		fila = tblLaptops.getSelectedRow();
 
-		// Proceso y salida de resultados
 		if (datosValidos()) {
 			tienda.actualizarLaptop(fila,
 					getTexto(txtMarca), getTexto(txtModelo), getTexto(txtProcesador),
@@ -323,30 +309,25 @@ public class VentanaProductos extends JDialog implements ActionListener, ListSel
 		}
 	}
 
-	// Procesa la pulsación del botón Eliminar
 	protected void actionPerformedBtnEliminar(ActionEvent arg0) {
-		// Declaración de variables
 		int fila, respuesta;
 
-		// Entrada de datos
 		fila = tblLaptops.getSelectedRow();
 		respuesta = JOptionPane.showConfirmDialog(this,
 				"¿Eliminar la laptop " + tienda.getDatoLaptop(fila, 0) + "?",
 				"Confirmar", JOptionPane.YES_NO_OPTION);
 
-		// Proceso
 		if (respuesta == JOptionPane.YES_OPTION) {
 			tblLaptops.clearSelection();
 			tienda.eliminarLaptop(fila);
 		}
 	}
 
-	// Lee y retorna el texto de una caja sin espacios a los lados
 	String getTexto(JTextField txt) {
 		return txt.getText().trim();
 	}
 
-	// Lee y retorna el precio con dos decimales, o -1 si no es un número
+	// Retorna -1 si no es un número
 	double getPrecio() {
 		double pre;
 		try {
@@ -358,7 +339,7 @@ public class VentanaProductos extends JDialog implements ActionListener, ListSel
 		}
 	}
 
-	// Lee y retorna el stock, o -1 si no es un número entero
+	// Retorna -1 si no es un número entero
 	int getStock() {
 		try {
 			return Integer.parseInt(getTexto(txtStock));
@@ -368,12 +349,10 @@ public class VentanaProductos extends JDialog implements ActionListener, ListSel
 		}
 	}
 
-	// Retorna true si la caja de texto está vacía
 	boolean estaVacio(JTextField txt) {
 		return getTexto(txt).equals("");
 	}
 
-	// Retorna true si todos los datos son correctos
 	// Si hay un error, muestra un mensaje y retorna false
 	boolean datosValidos() {
 		if (estaVacio(txtMarca) || estaVacio(txtModelo) || estaVacio(txtProcesador)
@@ -393,7 +372,6 @@ public class VentanaProductos extends JDialog implements ActionListener, ListSel
 		return true;
 	}
 
-	// Muestra en los campos la laptop de una fila
 	void mostrarLaptop(int fila) {
 		lblCodigo.setText("Laptop seleccionada: " + tienda.getDatoLaptop(fila, 0));
 		txtMarca.setText(tienda.getDatoLaptop(fila, 1));
@@ -408,7 +386,6 @@ public class VentanaProductos extends JDialog implements ActionListener, ListSel
 		habilitarBotones(true);
 	}
 
-	// Limpia los campos para ingresar una laptop nueva
 	void limpiarCampos() {
 		lblCodigo.setText("Nueva laptop (el código se genera al registrar)");
 		txtMarca.setText("");
@@ -430,13 +407,12 @@ public class VentanaProductos extends JDialog implements ActionListener, ListSel
 		btnEliminar.setEnabled(seleccionada);
 	}
 
-	// Selecciona una fila y desplaza la tabla hasta mostrarla
+	// Desplaza la tabla hasta mostrar la fila seleccionada
 	void seleccionar(int fila) {
 		tblLaptops.setRowSelectionInterval(fila, fila);
 		tblLaptops.scrollRectToVisible(tblLaptops.getCellRect(fila, 0, true));
 	}
 
-	// Muestra un mensaje en una ventana emergente
 	void mensaje(String cad) {
 		JOptionPane.showMessageDialog(this, cad);
 	}
