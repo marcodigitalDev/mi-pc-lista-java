@@ -133,41 +133,18 @@ public class Tienda {
 		}
 		return -1;
 	}
-	// Busca laptops según el presupuesto y disponibilidad
-	public DefaultTableModel buscarProductos(String codigo, double minimo, double maximo,
-	        boolean filtrarPrecio) {
+	// Indica si la laptop de la fila coincide con el código y, si se filtra por
+	// precio, si está dentro del presupuesto y tiene stock disponible
+	public boolean coincideBusqueda(int fila, String codigo, double minimo, double maximo,
+			boolean filtrarPrecio) {
+		boolean coincideCodigo, coincidePrecio;
+		double precio;
 
-	    DefaultTableModel resultados = new DefaultTableModel();
-
-	    for (int j = 0; j < modeloLaptops.getColumnCount(); j++) {
-	        resultados.addColumn(modeloLaptops.getColumnName(j));
-	    }
-
-	    for (int i = 0; i < modeloLaptops.getRowCount(); i++) {
-
-	        String cod = getDatoLaptop(i, 0);
-	        double precio = getPrecio(i);
-	        int stock = getStock(i);
-
-	        boolean coincideCodigo = codigo.isEmpty()
-	                || cod.equalsIgnoreCase(codigo);
-
-	        boolean coincidePrecio = !filtrarPrecio
-	                || (precio >= minimo && precio <= maximo && stock > 0);
-
-	        if (coincideCodigo && coincidePrecio) {
-
-	            Object[] fila = new Object[modeloLaptops.getColumnCount()];
-
-	            for (int j = 0; j < modeloLaptops.getColumnCount(); j++) {
-	                fila[j] = modeloLaptops.getValueAt(i, j);
-	            }
-
-	            resultados.addRow(fila);
-	        }
-	    }
-
-	    return resultados;
+		coincideCodigo = codigo.isEmpty() || getDatoLaptop(fila, 0).equalsIgnoreCase(codigo);
+		precio = getPrecio(fila);
+		coincidePrecio = !filtrarPrecio
+				|| (precio >= minimo && precio <= maximo && getStock(fila) > 0);
+		return coincideCodigo && coincidePrecio;
 	}
 
 	// Locale.US asegura el punto decimal en cualquier computadora
