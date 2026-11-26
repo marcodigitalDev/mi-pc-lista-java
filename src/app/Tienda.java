@@ -133,6 +133,19 @@ public class Tienda {
 		}
 		return -1;
 	}
+	// Indica si la laptop de la fila coincide con el código y, si se filtra por
+	// precio, si está dentro del presupuesto y tiene stock disponible
+	public boolean coincideBusqueda(int fila, String codigo, double minimo, double maximo,
+			boolean filtrarPrecio) {
+		boolean coincideCodigo, coincidePrecio;
+		double precio;
+
+		coincideCodigo = codigo.isEmpty() || getDatoLaptop(fila, 0).equalsIgnoreCase(codigo);
+		precio = getPrecio(fila);
+		coincidePrecio = !filtrarPrecio
+				|| (precio >= minimo && precio <= maximo && getStock(fila) > 0);
+		return coincideCodigo && coincidePrecio;
+	}
 
 	// Locale.US asegura el punto decimal en cualquier computadora
 	public String formatear(double monto) {

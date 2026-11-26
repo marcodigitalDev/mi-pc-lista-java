@@ -14,8 +14,11 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+import javax.swing.RowFilter;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableRowSorter;
 
 public class VentanaProductos extends JDialog implements ActionListener, ListSelectionListener {
 	private static final long serialVersionUID = 1L;
@@ -52,6 +55,13 @@ public class VentanaProductos extends JDialog implements ActionListener, ListSel
 	private JButton btnActualizar;
 	private JButton btnEliminar;
 	private Tienda tienda;
+	private JLabel lblPrecioMinimo;
+	private JLabel lblPrecioMaximo;
+	private JTextField txtPrecioMinimo;
+	private JTextField txtPrecioMaximo;
+	private JButton btnMostrarTodos;
+	// Filtra las filas visibles sin copiar el modelo de la tienda
+	private TableRowSorter<DefaultTableModel> ordenador;
 
 	public VentanaProductos(Tienda tie) {
 		tienda = tie;
@@ -85,15 +95,26 @@ public class VentanaProductos extends JDialog implements ActionListener, ListSel
 		getContentPane().add(lblBuscar);
 
 		txtBuscar = new JTextField();
-		txtBuscar.setBounds(75, 70, 110, 25);
+		txtBuscar.setBounds(75, 70, 100, 25);
 		getContentPane().add(txtBuscar);
 		txtBuscar.setColumns(10);
 
-		btnConsultar = new JButton("Consultar");
-		btnConsultar.setIcon(new ImageIcon("src/imagenes/buscar.png"));
-		btnConsultar.addActionListener(this);
-		btnConsultar.setBounds(195, 66, 125, 32);
-		getContentPane().add(btnConsultar);
+		// Busqueda por rango de precios
+		lblPrecioMinimo = new JLabel("Precio mínimo:");
+		lblPrecioMinimo.setBounds(190, 74, 100, 20);
+		getContentPane().add(lblPrecioMinimo);
+
+		txtPrecioMinimo = new JTextField();
+		txtPrecioMinimo.setBounds(285, 70, 85, 25);
+		getContentPane().add(txtPrecioMinimo);
+
+		lblPrecioMaximo = new JLabel("Precio máximo:");
+		lblPrecioMaximo.setBounds(380, 74, 100, 20);
+		getContentPane().add(lblPrecioMaximo);
+
+		txtPrecioMaximo = new JTextField();
+		txtPrecioMaximo.setBounds(475, 70, 85, 25);
+		getContentPane().add(txtPrecioMaximo);
 
 		scpLaptops = new JScrollPane();
 		scpLaptops.setBounds(15, 108, 890, 220);
@@ -121,6 +142,12 @@ public class VentanaProductos extends JDialog implements ActionListener, ListSel
 		// Las celdas no se editan directamente en la tabla
 		tblLaptops.setDefaultEditor(Object.class, null);
 		tblLaptops.getSelectionModel().addListSelectionListener(this);
+		ordenador = new TableRowSorter<DefaultTableModel>(tienda.getModeloLaptops());
+		// Solo se usa para filtrar; el orden de las filas no cambia
+		for (int j = 0; j < tienda.getModeloLaptops().getColumnCount(); j++) {
+			ordenador.setSortable(j, false);
+		}
+		tblLaptops.setRowSorter(ordenador);
 		scpLaptops.setViewportView(tblLaptops);
 
 		lblCodigo = new JLabel("");
@@ -227,6 +254,17 @@ public class VentanaProductos extends JDialog implements ActionListener, ListSel
 		btnActualizar.setBounds(295, 502, 125, 32);
 		getContentPane().add(btnActualizar);
 
+		btnConsultar = new JButton("Consultar");
+		btnConsultar.setIcon(new ImageIcon("src/imagenes/buscar.png"));
+		btnConsultar.addActionListener(this);
+		btnConsultar.setBounds(670, 66, 110, 32);
+		getContentPane().add(btnConsultar);
+
+		btnMostrarTodos = new JButton("Mostrar todos");
+		btnMostrarTodos.addActionListener(this);
+		btnMostrarTodos.setBounds(785, 66, 120, 32);
+		getContentPane().add(btnMostrarTodos);
+
 		btnEliminar = new JButton("Eliminar");
 		btnEliminar.setIcon(new ImageIcon("src/imagenes/eliminar.png"));
 		btnEliminar.addActionListener(this);
@@ -239,6 +277,9 @@ public class VentanaProductos extends JDialog implements ActionListener, ListSel
 	public void actionPerformed(ActionEvent arg0) {
 		if (arg0.getSource() == btnConsultar) {
 			actionPerformedBtnConsultar(arg0);
+		}
+		if (arg0.getSource() == btnMostrarTodos) {
+			actionPerformedBtnMostrarTodos(arg0);
 		}
 		if (arg0.getSource() == btnNuevo) {
 			actionPerformedBtnNuevo(arg0);
@@ -260,21 +301,71 @@ public class VentanaProductos extends JDialog implements ActionListener, ListSel
 			limpiarCampos();
 		}
 		else {
-			mostrarLaptop(tblLaptops.getSelectedRow());
+			mostrarLaptop(filaSeleccionada());
 		}
 	}
 
 	protected void actionPerformedBtnConsultar(ActionEvent arg0) {
-		int fila;
+		final String codigo = getTexto(txtBuscar);
+		String minimoTexto = getTexto(txtPrecioMinimo);
+		String maximoTexto = getTexto(txtPrecioMaximo);
+		final boolean filtrarPrecio = !minimoTexto.isEmpty() || !maximoTexto.isEmpty();
+		final double minimo, maximo;
 
-		fila = tienda.buscarFila(tienda.getModeloLaptops(), getTexto(txtBuscar));
+		if (codigo.isEmpty() && !filtrarPrecio) {
+			mensaje("Ingrese un código o un rango de precios");
+			return;
+		}
 
-		if (fila == -1) {
-			mensaje("No existe una laptop con ese código");
+		if (filtrarPrecio) {
+			if (minimoTexto.isEmpty() || maximoTexto.isEmpty()) {
+				mensaje("Ingrese el precio mínimo y máximo");
+				return;
+			}
+			try {
+				minimo = Double.parseDouble(minimoTexto);
+				maximo = Double.parseDouble(maximoTexto);
+			}
+			catch (NumberFormatException e) {
+				mensaje("Ingrese precios numéricos válidos");
+				return;
+			}
+			if (minimo < 0 || maximo < 0 || minimo > maximo) {
+				mensaje("Ingrese un rango de precios válido");
+				return;
+			}
 		}
 		else {
-			seleccionar(fila);
+			minimo = 0;
+			maximo = Double.MAX_VALUE;
 		}
+
+		tblLaptops.clearSelection();
+		ordenador.setRowFilter(new RowFilter<DefaultTableModel, Integer>() {
+			public boolean include(Entry<? extends DefaultTableModel, ? extends Integer> entrada) {
+				return tienda.coincideBusqueda(entrada.getIdentifier(), codigo, minimo, maximo,
+						filtrarPrecio);
+			}
+		});
+
+		if (tblLaptops.getRowCount() == 0) {
+			if (filtrarPrecio) {
+				mensaje("No se encontraron laptops disponibles");
+			}
+			else {
+				mensaje("No existe una laptop con ese código");
+			}
+		}
+		else if (tblLaptops.getRowCount() == 1) {
+			seleccionar(0);
+		}
+	}
+
+	protected void actionPerformedBtnMostrarTodos(ActionEvent arg0) {
+		txtBuscar.setText("");
+		txtPrecioMinimo.setText("");
+		txtPrecioMaximo.setText("");
+		quitarFiltro();
 	}
 
 	protected void actionPerformedBtnNuevo(ActionEvent arg0) {
@@ -289,7 +380,9 @@ public class VentanaProductos extends JDialog implements ActionListener, ListSel
 					getTexto(txtMarca), getTexto(txtModelo), getTexto(txtProcesador),
 					getTexto(txtRam), getTexto(txtAlmacenamiento), getTexto(txtPantalla),
 					getTexto(txtSistema), getPrecio(), getStock());
-			seleccionar(tblLaptops.getRowCount() - 1);
+			// La nueva laptop podría no cumplir el filtro actual
+			quitarFiltro();
+			seleccionar(tblLaptops.convertRowIndexToView(tienda.getModeloLaptops().getRowCount() - 1));
 			mensaje("Laptop registrada");
 		}
 	}
@@ -297,7 +390,7 @@ public class VentanaProductos extends JDialog implements ActionListener, ListSel
 	protected void actionPerformedBtnActualizar(ActionEvent arg0) {
 		int fila;
 
-		fila = tblLaptops.getSelectedRow();
+		fila = filaSeleccionada();
 
 		if (datosValidos()) {
 			tienda.actualizarLaptop(fila,
@@ -312,7 +405,7 @@ public class VentanaProductos extends JDialog implements ActionListener, ListSel
 	protected void actionPerformedBtnEliminar(ActionEvent arg0) {
 		int fila, respuesta;
 
-		fila = tblLaptops.getSelectedRow();
+		fila = filaSeleccionada();
 		respuesta = JOptionPane.showConfirmDialog(this,
 				"¿Eliminar la laptop " + tienda.getDatoLaptop(fila, 0) + "?",
 				"Confirmar", JOptionPane.YES_NO_OPTION);
@@ -407,7 +500,18 @@ public class VentanaProductos extends JDialog implements ActionListener, ListSel
 		btnEliminar.setEnabled(seleccionada);
 	}
 
-	// Desplaza la tabla hasta mostrar la fila seleccionada
+	// Índice en el modelo de la tienda de la fila seleccionada en la tabla
+	// (con filtro, el índice visible no coincide con el del modelo)
+	int filaSeleccionada() {
+		return tblLaptops.convertRowIndexToModel(tblLaptops.getSelectedRow());
+	}
+
+	void quitarFiltro() {
+		tblLaptops.clearSelection();
+		ordenador.setRowFilter(null);
+	}
+
+	// Recibe el índice visible en la tabla y la desplaza hasta mostrar esa fila
 	void seleccionar(int fila) {
 		tblLaptops.setRowSelectionInterval(fila, fila);
 		tblLaptops.scrollRectToVisible(tblLaptops.getCellRect(fila, 0, true));
