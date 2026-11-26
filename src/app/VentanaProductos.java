@@ -52,6 +52,12 @@ public class VentanaProductos extends JDialog implements ActionListener, ListSel
 	private JButton btnActualizar;
 	private JButton btnEliminar;
 	private Tienda tienda;
+	private JLabel lblPrecioMinimo;
+	private JLabel lblPrecioMaximo;
+	private JTextField txtPrecioMinimo;
+	private JTextField txtPrecioMaximo;
+	private JButton btnBuscarPrecio;
+	private JButton btnMostrarTodos;
 
 	public VentanaProductos(Tienda tie) {
 		tienda = tie;
@@ -85,15 +91,26 @@ public class VentanaProductos extends JDialog implements ActionListener, ListSel
 		getContentPane().add(lblBuscar);
 
 		txtBuscar = new JTextField();
-		txtBuscar.setBounds(75, 70, 110, 25);
+		txtBuscar.setBounds(75, 70, 100, 25);
 		getContentPane().add(txtBuscar);
 		txtBuscar.setColumns(10);
 
-		btnConsultar = new JButton("Consultar");
-		btnConsultar.setIcon(new ImageIcon("src/imagenes/buscar.png"));
-		btnConsultar.addActionListener(this);
-		btnConsultar.setBounds(195, 66, 125, 32);
-		getContentPane().add(btnConsultar);
+		// Busqueda por rango de precios
+		lblPrecioMinimo = new JLabel("Precio mínimo:");
+		lblPrecioMinimo.setBounds(190, 74, 100, 20);
+		getContentPane().add(lblPrecioMinimo);
+
+		txtPrecioMinimo = new JTextField();
+		txtPrecioMinimo.setBounds(285, 70, 85, 25);
+		getContentPane().add(txtPrecioMinimo);
+
+		lblPrecioMaximo = new JLabel("Precio máximo:");
+		lblPrecioMaximo.setBounds(380, 74, 100, 20);
+		getContentPane().add(lblPrecioMaximo);
+
+		txtPrecioMaximo = new JTextField();
+		txtPrecioMaximo.setBounds(475, 70, 85, 25);
+		getContentPane().add(txtPrecioMaximo);
 
 		scpLaptops = new JScrollPane();
 		scpLaptops.setBounds(15, 108, 890, 220);
@@ -226,6 +243,19 @@ public class VentanaProductos extends JDialog implements ActionListener, ListSel
 		btnActualizar.addActionListener(this);
 		btnActualizar.setBounds(295, 502, 125, 32);
 		getContentPane().add(btnActualizar);
+		
+		btnMostrarTodos = new JButton("Mostrar todos");
+		btnMostrarTodos.setBounds(790, 66, 120, 32);
+		btnMostrarTodos.addActionListener(this);
+		getContentPane().add(btnMostrarTodos);
+		
+		btnConsultar = new JButton("Consultar");
+		btnConsultar.setIcon(new ImageIcon("src/imagenes/buscar.png"));
+		btnConsultar.addActionListener(this);
+		btnConsultar.setBounds(680, 66,100,32);
+		getContentPane().add(btnConsultar);
+		
+		
 
 		btnEliminar = new JButton("Eliminar");
 		btnEliminar.setIcon(new ImageIcon("src/imagenes/eliminar.png"));
@@ -237,21 +267,30 @@ public class VentanaProductos extends JDialog implements ActionListener, ListSel
 	}
 
 	public void actionPerformed(ActionEvent arg0) {
-		if (arg0.getSource() == btnConsultar) {
-			actionPerformedBtnConsultar(arg0);
-		}
-		if (arg0.getSource() == btnNuevo) {
-			actionPerformedBtnNuevo(arg0);
-		}
-		if (arg0.getSource() == btnRegistrar) {
-			actionPerformedBtnRegistrar(arg0);
-		}
-		if (arg0.getSource() == btnActualizar) {
-			actionPerformedBtnActualizar(arg0);
-		}
-		if (arg0.getSource() == btnEliminar) {
-			actionPerformedBtnEliminar(arg0);
-		}
+
+	    if (arg0.getSource() == btnConsultar) {
+	        actionPerformedBtnConsultar(arg0);
+	    }
+
+	    if (arg0.getSource() == btnNuevo) {
+	        actionPerformedBtnNuevo(arg0);
+	    }
+
+	    if (arg0.getSource() == btnRegistrar) {
+	        actionPerformedBtnRegistrar(arg0);
+	    }
+
+	    if (arg0.getSource() == btnActualizar) {
+	        actionPerformedBtnActualizar(arg0);
+	    }
+
+	    if (arg0.getSource() == btnEliminar) {
+	        actionPerformedBtnEliminar(arg0);
+	    }
+
+	    if (arg0.getSource() == btnMostrarTodos) {
+	        tblLaptops.setModel(tienda.getModeloLaptops());
+	    }
 	}
 
 	// Se ejecuta al cambiar la fila seleccionada en la tabla
@@ -265,16 +304,57 @@ public class VentanaProductos extends JDialog implements ActionListener, ListSel
 	}
 
 	protected void actionPerformedBtnConsultar(ActionEvent arg0) {
-		int fila;
 
-		fila = tienda.buscarFila(tienda.getModeloLaptops(), getTexto(txtBuscar));
+	    String codigo = getTexto(txtBuscar);
+	    String minimoTexto = getTexto(txtPrecioMinimo);
+	    String maximoTexto = getTexto(txtPrecioMaximo);
 
-		if (fila == -1) {
-			mensaje("No existe una laptop con ese código");
-		}
-		else {
-			seleccionar(fila);
-		}
+	    boolean filtrarPrecio = !minimoTexto.isEmpty() || !maximoTexto.isEmpty();
+
+	    double minimo = 0;
+	    double maximo = Double.MAX_VALUE;
+
+	    try {
+
+	        if (filtrarPrecio) {
+
+	            if (minimoTexto.isEmpty() || maximoTexto.isEmpty()) {
+	                mensaje("Ingrese el precio mínimo y máximo");
+	                return;
+	            }
+
+	            minimo = Double.parseDouble(minimoTexto);
+	            maximo = Double.parseDouble(maximoTexto);
+
+	            if (minimo < 0 || maximo < 0 || minimo > maximo) {
+	                mensaje("Ingrese un rango de precios válido");
+	                return;
+	            }
+	        }
+
+	        if (codigo.isEmpty() && !filtrarPrecio) {
+	            mensaje("Ingrese un código o un rango de precios");
+	            return;
+	        }
+
+	        tblLaptops.clearSelection();
+
+	        tblLaptops.setModel(
+	            tienda.buscarProductos(codigo, minimo, maximo, filtrarPrecio)
+	        );
+
+	        if (tblLaptops.getRowCount() == 0) {
+
+	            if (!codigo.isEmpty() && !filtrarPrecio) {
+	                mensaje("No existe una laptop con ese código");
+	            } else {
+	                mensaje("No se encontraron laptops disponibles");
+	            }
+	        }
+
+	    } catch (NumberFormatException e) {
+	        mensaje("Ingrese precios numéricos válidos");
+	    }
 	}
 
 	protected void actionPerformedBtnNuevo(ActionEvent arg0) {

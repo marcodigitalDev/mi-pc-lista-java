@@ -133,6 +133,42 @@ public class Tienda {
 		}
 		return -1;
 	}
+	// Busca laptops según el presupuesto y disponibilidad
+	public DefaultTableModel buscarProductos(String codigo, double minimo, double maximo,
+	        boolean filtrarPrecio) {
+
+	    DefaultTableModel resultados = new DefaultTableModel();
+
+	    for (int j = 0; j < modeloLaptops.getColumnCount(); j++) {
+	        resultados.addColumn(modeloLaptops.getColumnName(j));
+	    }
+
+	    for (int i = 0; i < modeloLaptops.getRowCount(); i++) {
+
+	        String cod = getDatoLaptop(i, 0);
+	        double precio = getPrecio(i);
+	        int stock = getStock(i);
+
+	        boolean coincideCodigo = codigo.isEmpty()
+	                || cod.equalsIgnoreCase(codigo);
+
+	        boolean coincidePrecio = !filtrarPrecio
+	                || (precio >= minimo && precio <= maximo && stock > 0);
+
+	        if (coincideCodigo && coincidePrecio) {
+
+	            Object[] fila = new Object[modeloLaptops.getColumnCount()];
+
+	            for (int j = 0; j < modeloLaptops.getColumnCount(); j++) {
+	                fila[j] = modeloLaptops.getValueAt(i, j);
+	            }
+
+	            resultados.addRow(fila);
+	        }
+	    }
+
+	    return resultados;
+	}
 
 	// Locale.US asegura el punto decimal en cualquier computadora
 	public String formatear(double monto) {
